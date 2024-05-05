@@ -57,5 +57,5 @@ $ python test.py -net mobilenet -weights path_to_best_mobilenet_weights_file
 
 |dataset|network|params|top1 err|top5 err|time(ms) per inference step|FLOPs|
 |:-----:|:-----:|:----:|:------:|:------:|:-------------:|:--------------:|
-|cifar100|vgg16|34.0M|27.77|10.12|269.19|334|
+|cifar100|vgg16|34.0M|27.77|10.12|269.19|334.14|
 |cifar100|mobilenet|3.3M|33.06|10.15|49.25|48.32|
