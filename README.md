@@ -1,7 +1,7 @@
 # Knowledge Distillation from VGG16 to Mobilenet
 
-Teacher model - VGG16
-Student model - Mobilenet
+- Teacher model - VGG16
+- Student model - Mobilenet
 
 ## Requirements
 
