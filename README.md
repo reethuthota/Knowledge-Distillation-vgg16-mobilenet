@@ -1,7 +1,5 @@
 # Knowledge Distillation from VGG16 to Mobilenet
 
-practice on cifar100 using pytorch
-
 ## Requirements
 
 - python 3.10
