@@ -1,5 +1,8 @@
 # Knowledge Distillation from VGG16 to Mobilenet
 
+Teacher model - VGG16
+Student model - Mobilenet
+
 ## Requirements
 
 - python 3.10
