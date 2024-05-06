@@ -22,7 +22,7 @@ from utils import get_network, get_training_dataloader, get_test_dataloader, War
 def train(teacher, student, epoch, train_loader, soft_target_loss_weight, ce_loss_weight, T):
     
     start = time.time()
-    print("Training epoch : {epoch}", epoch)
+    print(f"Training epoch : {epoch}")
     running_loss = 0.0
     for inputs, labels in train_loader:
         if args.gpu:
@@ -141,50 +141,52 @@ if __name__ == '__main__':
     iter_per_epoch = len(cifar100_training_loader)
     warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
     
+    args.net = 'kd_mobilenet'
+    
     if args.resume:
-        recent_folder = most_recent_folder(os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation'), fmt=settings.DATE_FORMAT)
+        recent_folder = most_recent_folder(os.path.join(settings.CHECKPOINT_PATH, args.net), fmt=settings.DATE_FORMAT)
         if not recent_folder:
             raise Exception('no recent folder were found')
 
-        checkpoint_path = os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation', recent_folder)
+        checkpoint_path = os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder)
 
     else:
-        checkpoint_path = os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation', settings.TIME_NOW)
-        
+        checkpoint_path = os.path.join(settings.CHECKPOINT_PATH, args.net, settings.TIME_NOW)
+
+    
     #create checkpoint folder to save model
     if not os.path.exists(checkpoint_path):
         os.makedirs(checkpoint_path)
-    checkpoint_path = os.path.join(checkpoint_path, 'knowledge-distillation-{epoch}-{type}.pth')
+    checkpoint_path = os.path.join(checkpoint_path, '{net}-{epoch}-{type}.pth')
     
     best_acc = 0.0
     if args.resume:
-        best_weights = best_acc_weights(os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation', recent_folder))
+        best_weights = best_acc_weights(os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder))
         if best_weights:
-            weights_path = os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation', recent_folder, best_weights)
+            weights_path = os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder, best_weights)
             print('found best acc weights file:{}'.format(weights_path))
             print('load best training file to test acc...')
             kd_student.load_state_dict(torch.load(weights_path))
             best_acc = eval_training(tb=False)
             print('best acc is {:0.2f}'.format(best_acc))
 
-        recent_weights_file = most_recent_weights(os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation', recent_folder))
+        recent_weights_file = most_recent_weights(os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder))
         if not recent_weights_file:
             raise Exception('no recent weights file were found')
-        weights_path = os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation', recent_folder, recent_weights_file)
+        weights_path = os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder, recent_weights_file)
         print('loading weights file {} to resume training.....'.format(weights_path))
         kd_student.load_state_dict(torch.load(weights_path))
 
-        resume_epoch = last_epoch(os.path.join(settings.CHECKPOINT_PATH, 'knowledge-distillation', recent_folder))
+        resume_epoch = last_epoch(os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder))
     
     ce_loss = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(kd_student.parameters(), lr=args.lr)
 
     teacher.eval()  # Teacher set to evaluation mode
     kd_student.train() # Student to train mode
     
     for epoch in range(1, settings.EPOCH + 1):
         if epoch > args.warm:
-            train_scheduler.step(epoch)
+            train_scheduler.step()
 
         if args.resume:
             if epoch <= resume_epoch:
@@ -197,11 +199,11 @@ if __name__ == '__main__':
         if epoch > settings.MILESTONES[1] and best_acc < acc:
             weights_path = checkpoint_path.format(net=args.net, epoch=epoch, type='best')
             print('saving weights file to {}'.format(weights_path))
-            torch.save('knowledge-distillation'.state_dict(), weights_path)
+            torch.save(kd_student.state_dict(), weights_path)
             best_acc = acc
             continue
 
         if not epoch % settings.SAVE_EPOCH:
             weights_path = checkpoint_path.format(net=args.net, epoch=epoch, type='regular')
             print('saving weights file to {}'.format(weights_path))
-            torch.save('knowledge-distillation'.state_dict(), weights_path)
+            torch.save(kd_student.state_dict(), weights_path)
