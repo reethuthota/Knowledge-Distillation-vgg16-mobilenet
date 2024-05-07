@@ -12,6 +12,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
+from ptflops import get_model_complexity_info
 
 from torch.utils.data import DataLoader
 
@@ -23,6 +24,7 @@ def train(teacher, student, epoch, train_loader, soft_target_loss_weight, ce_los
     
     start = time.time()
     print(f"Training epoch : {epoch}")
+    student.train()
     running_loss = 0.0
     for inputs, labels in train_loader:
         if args.gpu:
@@ -62,10 +64,11 @@ def train(teacher, student, epoch, train_loader, soft_target_loss_weight, ce_los
     print('epoch {} training time consumed: {:.2f}s'.format(epoch, finish - start))
 
 @torch.no_grad()
-def eval_training(epoch=0, tb=True):
+def eval_training(model, epoch=0):
 
     start = time.time()
-    kd_student.eval()
+    model.to(device)
+    model.eval()
 
     test_loss = 0.0 # cost function error
     correct = 0.0
@@ -76,7 +79,7 @@ def eval_training(epoch=0, tb=True):
             images = images.cuda()
             labels = labels.cuda()
 
-        outputs = kd_student(images)
+        outputs = model(images)
         loss = loss_function(outputs, labels)
 
         test_loss += loss.item()
@@ -167,7 +170,7 @@ if __name__ == '__main__':
             print('found best acc weights file:{}'.format(weights_path))
             print('load best training file to test acc...')
             kd_student.load_state_dict(torch.load(weights_path))
-            best_acc = eval_training(tb=False)
+            best_acc = eval_training(kd_student)
             print('best acc is {:0.2f}'.format(best_acc))
 
         recent_weights_file = most_recent_weights(os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder))
@@ -180,7 +183,11 @@ if __name__ == '__main__':
         resume_epoch = last_epoch(os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder))
     
     ce_loss = nn.CrossEntropyLoss()
-
+    
+    if args.gpu==True:
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        teacher.to(device)
+        kd_student.to(device)
     teacher.eval()  # Teacher set to evaluation mode
     kd_student.train() # Student to train mode
     
@@ -193,7 +200,7 @@ if __name__ == '__main__':
                 continue
 
         train(teacher, kd_student, epoch, cifar100_training_loader, soft_target_loss_weight=0.25, ce_loss_weight=0.75, T=2)
-        acc = eval_training(epoch)
+        acc = eval_training(kd_student, epoch)
 
         #start to save best performance model after learning rate decay to 0.01
         if epoch > settings.MILESTONES[1] and best_acc < acc:
