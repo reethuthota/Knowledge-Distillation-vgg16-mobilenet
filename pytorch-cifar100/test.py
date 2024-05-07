@@ -9,8 +9,12 @@ from utils import get_network, get_test_dataloader
 import torch.utils.benchmark as benchmark
 from ptflops import get_model_complexity_info
 import time
+from torchsummary import summary
 
 if __name__ == '__main__':
+
+    torch.manual_seed(42) 
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('-net', type=str, required=True, help='net type')
     parser.add_argument('-weights', type=str, required=True, help='the weights file you want to test')
@@ -27,6 +31,7 @@ if __name__ == '__main__':
     )
     net.load_state_dict(torch.load(args.weights))
     print(net)
+    net.to('cuda')
     net.eval()
 
     correct_1 = 0.0
@@ -61,6 +66,7 @@ if __name__ == '__main__':
     print()
     print("Parameter numbers: {}".format(sum(p.numel() for p in net.parameters())))
     macs, params = get_model_complexity_info(net, (3, 32, 32), as_strings=True)
+    summary(net, (3, 32, 32))
     print("Top 1 err: ", 1 - correct_1 / len(cifar100_test_loader.dataset))
     print("Top 5 err: ", 1 - correct_5 / len(cifar100_test_loader.dataset))
     print(f"FLOPs: {macs}")
