@@ -23,6 +23,9 @@ def get_network(args):
     elif args.net == 'mobilenet':
         from models.mobilenet import mobilenet
         net = mobilenet()
+    elif args.net == 'kd_mobilenet':
+        from models.mobilenet import mobilenet
+        net = mobilenet()
     else:
         print('Only vgg16 & mobilenet are supported')
         sys.exit()
