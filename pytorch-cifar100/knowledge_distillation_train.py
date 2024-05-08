@@ -12,7 +12,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
-from ptflops import get_model_complexity_info
 
 from torch.utils.data import DataLoader
 
@@ -60,7 +59,12 @@ def train(teacher, student, epoch, train_loader, soft_target_loss_weight, ce_los
 
     #print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}")
     finish = time.time()
-
+    
+    print('Training Epoch: {epoch} \tLoss: {:0.4f}\tLR: {:0.6f}'.format(
+            loss.item(),
+            optimizer.param_groups[0]['lr'],
+            epoch=epoch
+        ))
     print('epoch {} training time consumed: {:.2f}s'.format(epoch, finish - start))
 
 @torch.no_grad()
@@ -110,6 +114,8 @@ if __name__ == '__main__':
     parser.add_argument('-warm', type=int, default=1, help='warm up training phase')
     parser.add_argument('-lr', type=float, default=0.1, help='initial learning rate')
     parser.add_argument('-resume', action='store_true', default=False, help='resume training')
+    parser.add_argument('-teacher',  type=str, required=True, help='weights of teacher model')
+    parser.add_argument('-student',  type=str, required=True, help='weights of student model')
     args = parser.parse_args()
 
     cifar100_training_loader = get_training_dataloader(
@@ -130,20 +136,21 @@ if __name__ == '__main__':
     
     args.net = 'vgg16'
     teacher = get_network(args)
-    teacher.load_state_dict(torch.load('/runs/vgg16/vgg16-164-best.pth'))
+    teacher.load_state_dict(torch.load(args.teacher))
     teacher.eval()
     
     args.net = 'mobilenet'
     kd_student = get_network(args)
-    kd_student.load_state_dict(torch.load('/runs/mobilenet/mobilenet-124-best.pth'))
+    kd_student.load_state_dict(torch.load(args.student))
     kd_student.train()
     
     loss_function = nn.CrossEntropyLoss()
     optimizer = optim.SGD(kd_student.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
     train_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=settings.MILESTONES, gamma=0.2) #learning rate decay
-    iter_per_epoch = len(cifar100_training_loader)
-    warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
-    
+    # iter_per_epoch = len(cifar100_training_loader)
+    # warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
+    print(optimizer)
+        
     args.net = 'kd_mobilenet'
     
     if args.resume:
