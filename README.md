@@ -69,7 +69,7 @@ $ python knowledge_distillation_test.py -gpu -weights path_to_best_knowledge_dis
 
 ## Results
 
-|dataset|network|learning rate|batch size|size(MB)|params|top1 err|top5 err|time(ms) per inference step (CPU)|time(ms) per inference step (CPU)|FLOPs|
+|dataset|network|learning rate|batch size|size (MB)|params|top1 err|top5 err|time(ms) per inference step (CPU)|time(ms) per inference step (CPU)|FLOPs|
 |:-----:|:-----:|:----:|:----:|:------:|:----:|:------:|:------:|:--------------:|:--------------:|:---------:|
 |cifar100|vgg16|0.1|128|136.52|34.0M|27.77|10.12|164.3091|11.0140|334.14|
 |cifar100|mobilenet|0.1|128|24.03|3.32M|33.06|10.15|62.9727|9.4442|48.32|
