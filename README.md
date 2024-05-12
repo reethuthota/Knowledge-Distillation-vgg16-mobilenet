@@ -65,7 +65,8 @@ $ python knowledge_distillation_test.py -gpu -weights path_to_best_knowledge_dis
 
 - VGG [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/abs/1409.1556v6)
 - Mobilenet [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861)
-- Hyperparameter settings [Improved Regularization of Convolutional Neural Networks with Cutout](https://arxiv.org/abs/1708.04552v2), which is init lr = 0.1 divided by 5 at 60th, 120th, 160th epochs, trained for 200 epochs with batchsize 128 and weight decay 5e-4, Nesterov momentum of 0.9. 
+- Hyperparameter settings [Improved Regularization of Convolutional Neural Networks with Cutout](https://arxiv.org/abs/1708.04552v2), which is init lr = 0.1 divided by 5 at 60th, 120th, 160th epochs, trained for 200 epochs with batchsize 128 and weight decay 5e-4, Nesterov momentum of 0.9.
+- Code reference [GitHub : weiaicunzai](https://github.com/weiaicunzai/pytorch-cifar100)
 
 ## Results
 
