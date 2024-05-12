@@ -36,6 +36,12 @@ To train the Mobilenet model
 $ python train.py -net mobilenet -gpu
 ```
 
+To perform knowledge distillation from the trained VGG16 to the Mobilenet model
+```bash
+# use gpu to train mobilenet
+$ python knowledge_distillation_train.py -gpu -teacher path_to_best_vgg16_weights_file -student path_to_best_mobilenet_weights_file
+```
+
 The weights file with the best accuracy would be written to the disk with name suffix 'best' (default in checkpoint folder).
 
 
@@ -50,6 +56,11 @@ Test the mobilenet model
 $ python test.py -net mobilenet -weights path_to_best_mobilenet_weights_file
 ```
 
+Test the knowledge distilled mobilenet model 
+```bash
+$ python knowledge_distillation_test.py -gpu -weights path_to_best_knowledge_distilled_mobilenet_weights_file
+```
+
 ## Implementation Details and References
 
 - VGG [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/abs/1409.1556v6)
@@ -58,7 +69,9 @@ $ python test.py -net mobilenet -weights path_to_best_mobilenet_weights_file
 
 ## Results
 
-|dataset|network|params|top1 err|top5 err|time(ms) per inference step|FLOPs|
-|:-----:|:-----:|:----:|:------:|:------:|:-------------:|:--------------:|
-|cifar100|vgg16|34.0M|27.77|10.12|269.19|334.14|
-|cifar100|mobilenet|3.3M|33.06|10.15|49.25|48.32|
+|dataset|network|learning rate|batch size|size(MB)|params|top1 err|top5 err|time(ms) per inference step (CPU)|time(ms) per inference step (CPU)|FLOPs|
+|:-----:|:-----:|:----:|:----:|:------:|:----:|:------:|:------:|:--------------:|:--------------:|:---------:|
+|cifar100|vgg16|0.1|128|136.52|34.0M|27.77|10.12|164.3091|11.0140|334.14|
+|cifar100|mobilenet|0.1|128|24.03|3.32M|33.06|10.15|62.9727|9.4442|48.32|
+|cifar100|knowledge distilled mobilenet|0.1|128|24.03|3.32M|32.61|10.26|63.8224|9.7993|48.32|
+|cifar100|knowledge distilled mobilenet|0.001|64|24.03|3.32M|32.16|10.83|65.0266|8.7168|48.32|
