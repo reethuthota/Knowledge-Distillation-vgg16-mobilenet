@@ -9,11 +9,12 @@
 - pytorch 2.2.1+cu121
 
 ## Usage
+### 1. Models
+#### VGG16
+VGG16, a renowned CNN architecture from the University of Oxford, excels in image classification with its 16 layers and simple structure. It comprises 13 convolutional and 3 fully connected layers, employing 3x3 filters and 2x2 max-pooling. Despite its effectiveness, its size and depth can be computationally intensive.
 
-### 1. enter directory
-```bash
-$ cd pytorch-cifar100
-```
+#### MobileNet
+MobileNet, developed by Google, is tailored for mobile and embedded devices, featuring 28 layers and innovative depthwise separable convolutions. This reduces parameters and computational complexity while maintaining performance. MobileNet adapts to various input sizes and is widely used for transfer learning, albeit potentially sacrificing some accuracy for efficiency.
 
 ### 2. Dataset
 We have used the CIFAR-100 dataset. 
@@ -23,7 +24,7 @@ We have used the CIFAR-100 dataset.
 - There are 50,000 training images and 10,000 testing images.
 - Each image is labeled with one of the 100 fine-grained classes.
 
-### 4. Train the model
+### 3. Train the model
 To train the VGG16 model
 ```bash
 # use gpu to train vgg16
@@ -45,7 +46,7 @@ $ python knowledge_distillation_train.py -gpu -teacher path_to_best_vgg16_weight
 The weights file with the best accuracy would be written to the disk with name suffix 'best' (default in checkpoint folder).
 
 
-### 5. test the model
+### 4. test the model
 Test the VGG16 model 
 ```bash
 $ python test.py -net vgg16 -weights path_to_best_vgg16_weights_file
